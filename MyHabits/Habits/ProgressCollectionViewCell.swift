@@ -18,8 +18,6 @@ class ProgressCollectionViewCell: UICollectionViewCell {
     private let motivationLabel: UILabel = {
         let motivationLabel = UILabel()
         
-        motivationLabel.toAutoLayout()
-        
         motivationLabel.font = StyleHelper.Font.footnoteStatus
         motivationLabel.textColor = StyleHelper.Color.darkGray
         
@@ -28,8 +26,6 @@ class ProgressCollectionViewCell: UICollectionViewCell {
 
     private let progressLabel: UILabel = {
         let progressLabel = UILabel()
-        
-        progressLabel.toAutoLayout()
         
         progressLabel.font = StyleHelper.Font.footnoteStatus
         progressLabel.textColor = StyleHelper.Color.darkGray
@@ -40,7 +36,6 @@ class ProgressCollectionViewCell: UICollectionViewCell {
     private let progressBar: UIProgressView = {
         let progressBar = UIProgressView(progressViewStyle: .default)
         
-        progressBar.toAutoLayout()
         progressBar.clipsToBounds = true
         progressBar.layer.cornerRadius = StyleHelper.Radius.small
         progressBar.backgroundColor = StyleHelper.Color.lightGray
@@ -104,18 +99,22 @@ class ProgressCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(progressLabel)
         contentView.addSubview(progressBar)
         
-        let constraints = [
-            motivationLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: StyleHelper.Margin.Inner.small),
-            motivationLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: StyleHelper.Margin.Inner.normal),
-            progressLabel.topAnchor.constraint(equalTo: motivationLabel.topAnchor),
-            progressLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -StyleHelper.Margin.Inner.normal),
-            progressBar.topAnchor.constraint(equalTo: motivationLabel.bottomAnchor, constant: StyleHelper.Margin.Inner.small),
-            progressBar.leadingAnchor.constraint(equalTo: motivationLabel.leadingAnchor),
-            progressBar.trailingAnchor.constraint(equalTo: progressLabel.trailingAnchor),
-            progressBar.heightAnchor.constraint(equalToConstant: StyleHelper.Size.progressBarHeight)
-        ]
+        motivationLabel.snp.makeConstraints { (motivationLabel) in
+            motivationLabel.top.equalTo(contentView).inset(StyleHelper.Margin.Inner.small)
+            motivationLabel.leading.equalTo(contentView).inset(StyleHelper.Margin.Inner.normal)
+        }
         
-        NSLayoutConstraint.activate(constraints)
+        progressLabel.snp.makeConstraints { (progressLabel) in
+            progressLabel.top.equalTo(motivationLabel)
+            progressLabel.trailing.equalTo(contentView).inset(StyleHelper.Margin.Inner.normal)
+        }
+        
+        progressBar.snp.makeConstraints { (progressBar) in
+            progressBar.top.equalTo(motivationLabel.snp.bottom).offset(StyleHelper.Margin.Inner.small)
+            progressBar.leading.equalTo(motivationLabel)
+            progressBar.trailing.equalTo(progressLabel)
+            progressBar.height.equalTo(StyleHelper.Size.progressBarHeight)
+        }
     }
     
 }

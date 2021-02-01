@@ -17,8 +17,6 @@ class HabitDetailViewController: UIViewController {
     private lazy var tableView: UITableView = {
         let tableView = UITableView(frame: .zero, style: .grouped)
         
-        tableView.toAutoLayout()
-        
         tableView.dataSource = self
         
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: StyleHelper.ReuseIdentifier.habitDetail)
@@ -55,14 +53,9 @@ class HabitDetailViewController: UIViewController {
         view.addSubview(tableView)
         view.backgroundColor = StyleHelper.Color.lightGray
         
-        let constraints = [
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ]
-        
-        NSLayoutConstraint.activate(constraints)
+        tableView.snp.makeConstraints { (tableView) in
+            tableView.edges.equalTo(view.safeAreaLayoutGuide)
+        }
     }
     
     // MARK: - Actions
