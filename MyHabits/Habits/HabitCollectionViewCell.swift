@@ -50,8 +50,6 @@ class HabitCollectionViewCell: UICollectionViewCell {
     private let habitTitleLabel: UILabel = {
         let habitTitleLabel = UILabel()
         
-        habitTitleLabel.toAutoLayout()
-        
         habitTitleLabel.font = StyleHelper.Font.headline
         habitTitleLabel.numberOfLines = 2
         
@@ -60,8 +58,6 @@ class HabitCollectionViewCell: UICollectionViewCell {
     
     private let habitTimeLabel: UILabel = {
         let habitTimeLabel = UILabel()
-        
-        habitTimeLabel.toAutoLayout()
         
         habitTimeLabel.textColor = StyleHelper.Color.gray
         habitTimeLabel.font = StyleHelper.Font.caption
@@ -72,8 +68,6 @@ class HabitCollectionViewCell: UICollectionViewCell {
     private let habitRepeatLabel: UILabel = {
         let habitRepeatLabel = UILabel()
         
-        habitRepeatLabel.toAutoLayout()
-        
         habitRepeatLabel.textColor = StyleHelper.Color.darkGray
         habitRepeatLabel.font = StyleHelper.Font.footnote
         
@@ -82,8 +76,6 @@ class HabitCollectionViewCell: UICollectionViewCell {
     
     private lazy var habitTrackTick: UIView = {
         let habitTrackTick = UIView()
-        
-        habitTrackTick.toAutoLayout()
         
         habitTrackTick.clipsToBounds = true
         habitTrackTick.layer.cornerRadius = StyleHelper.Size.habitTrackTickSize / 2
@@ -94,18 +86,12 @@ class HabitCollectionViewCell: UICollectionViewCell {
         tickImageView.image = #imageLiteral(resourceName: "tick_icon")
         tickImageView.backgroundColor = .clear
         
-        tickImageView.toAutoLayout()
-        
         habitTrackTick.addSubview(tickImageView)
         
-        let constraints = [
-            tickImageView.centerYAnchor.constraint(equalTo: habitTrackTick.centerYAnchor),
-            tickImageView.centerXAnchor.constraint(equalTo: habitTrackTick.centerXAnchor),
-            tickImageView.heightAnchor.constraint(equalToConstant: 15),
-            tickImageView.widthAnchor.constraint(equalToConstant: 15)
-        ]
-        
-        NSLayoutConstraint.activate(constraints)
+        tickImageView.snp.makeConstraints { (tickImageView) in
+            tickImageView.center.equalTo(habitTrackTick)
+            tickImageView.size.equalTo(15)
+        }
         
         let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(tapTick(_:)))
         habitTrackTick.addGestureRecognizer(tapGestureRecognizer)
@@ -158,24 +144,29 @@ class HabitCollectionViewCell: UICollectionViewCell {
         contentView.addSubview(habitRepeatLabel)
         contentView.addSubview(habitTrackTick)
         
-        let constraints = [
-            habitTitleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: StyleHelper.Margin.Habit.normal),
-            habitTitleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: StyleHelper.Margin.Habit.normal),
-            habitTimeLabel.topAnchor.constraint(equalTo: habitTitleLabel.bottomAnchor, constant: StyleHelper.Spacing.smallest),
-            habitTimeLabel.leadingAnchor.constraint(equalTo: habitTitleLabel.leadingAnchor),
-            habitTimeLabel.trailingAnchor.constraint(equalTo: habitTitleLabel.trailingAnchor),
-            habitRepeatLabel.leadingAnchor.constraint(equalTo: habitTitleLabel.leadingAnchor),
-            habitRepeatLabel.trailingAnchor.constraint(equalTo: habitTitleLabel.trailingAnchor),
-            habitRepeatLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -StyleHelper.Margin.Habit.normal),
-            habitTrackTick.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -StyleHelper.Margin.large),
-            habitTrackTick.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-            habitTrackTick.widthAnchor.constraint(equalToConstant: StyleHelper.Size.habitTrackTickSize),
-            habitTrackTick.heightAnchor.constraint(equalToConstant: StyleHelper.Size.habitTrackTickSize),
-            habitTrackTick.leadingAnchor.constraint(greaterThanOrEqualTo: habitTitleLabel.trailingAnchor, constant: StyleHelper.Margin.Habit.giant)
-            
-        ]
+        habitTitleLabel.snp.makeConstraints { (titleLabel) in
+            titleLabel.top.equalTo(contentView).inset(StyleHelper.Margin.Habit.normal)
+            titleLabel.leading.equalTo(contentView).inset(StyleHelper.Margin.Habit.normal)
+        }
         
-        NSLayoutConstraint.activate(constraints)
+        habitTimeLabel.snp.makeConstraints { (timeLabel) in
+            timeLabel.top.equalTo(habitTitleLabel.snp.bottom).offset(StyleHelper.Spacing.smallest)
+            timeLabel.leading.equalTo(habitTitleLabel)
+            timeLabel.trailing.equalTo(habitTitleLabel)
+        }
+        
+        habitRepeatLabel.snp.makeConstraints { (repeatLabel) in
+            repeatLabel.leading.equalTo(habitTitleLabel)
+            repeatLabel.trailing.equalTo(habitTitleLabel)
+            repeatLabel.bottom.equalTo(contentView).inset(StyleHelper.Margin.Habit.normal)
+        }
+        
+        habitTrackTick.snp.makeConstraints { (trackTick) in
+            trackTick.trailing.equalTo(contentView).inset(StyleHelper.Margin.large)
+            trackTick.centerY.equalTo(contentView)
+            trackTick.size.equalTo(StyleHelper.Size.habitTrackTickSize)
+            trackTick.leading.greaterThanOrEqualTo(habitTitleLabel.snp.trailing).offset(StyleHelper.Margin.Habit.giant)
+        }
     }
     
     // MARK: - Actions

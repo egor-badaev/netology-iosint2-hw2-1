@@ -9,37 +9,21 @@ import UIKit
 
 class InfoViewController: UIViewController {
     
-    private let scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        
-        scrollView.toAutoLayout()
-        
-        return scrollView
-    }()
+    private let scrollView = UIScrollView()
     
-    private let contentView: UIView = {
-        let contentView = UIView()
-        
-        contentView.toAutoLayout()
-        
-        return contentView
-    }()
+    private let contentView = UIView()
     
     private let titleLabel: UILabel = {
-        let titleLabel = UILabel()
+
+        $0.font = StyleHelper.Font.title3
+        $0.text = "Привычка за 21 день"
+        return $0
         
-        titleLabel.toAutoLayout()
-        titleLabel.font = StyleHelper.Font.title3
-        
-        titleLabel.text = "Привычка за 21 день"
-        
-        return titleLabel
-    }()
+    }(UILabel())
     
     private let descriptionLabel: UILabel = {
         let descriptionLabel = UILabel()
         
-        descriptionLabel.toAutoLayout()
         descriptionLabel.numberOfLines = 0
         descriptionLabel.font = StyleHelper.Font.body
         
@@ -77,19 +61,19 @@ class InfoViewController: UIViewController {
         contentView.addSubview(titleLabel)
         contentView.addSubview(descriptionLabel)
         
-        let constraints = [
-            
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: StyleHelper.Margin.large),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: StyleHelper.Margin.normal),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -StyleHelper.Margin.normal),
-            
-            descriptionLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: StyleHelper.Margin.normal),
-            descriptionLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            descriptionLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            descriptionLabel.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -StyleHelper.Margin.large)
-        ]
+        titleLabel.snp.makeConstraints { (titleLabel) in
+            titleLabel.top.equalTo(contentView).inset(StyleHelper.Margin.large)
+            titleLabel.leading.equalTo(contentView).inset(StyleHelper.Margin.normal)
+            titleLabel.trailing.equalTo(contentView).inset(StyleHelper.Margin.normal)
+        }
         
-        NSLayoutConstraint.activate(constraints)
+        descriptionLabel.snp.makeConstraints { (descriptionLabel) in
+            descriptionLabel.top.equalTo(titleLabel.snp.bottom).offset(StyleHelper.Margin.large)
+            descriptionLabel.leading.equalTo(titleLabel)
+            descriptionLabel.trailing.equalTo(titleLabel)
+            descriptionLabel.bottom.equalTo(contentView).inset(StyleHelper.Margin.large)
+        }
+
     }
 
 }

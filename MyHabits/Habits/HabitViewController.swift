@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SnapKit
 
 class HabitViewController: UIViewController {
     
@@ -37,34 +38,17 @@ class HabitViewController: UIViewController {
     
     // MARK: - Subviews
 
-    private let scrollView: UIScrollView = {
-        let scrollView = UIScrollView()
-        
-        scrollView.toAutoLayout()
-        
-        return scrollView
-    }()
-    
-    private let contentView: UIView = {
-        let contentView = UIView()
-        
-        contentView.toAutoLayout()
-        
-        return contentView
-    }()
-    
-    private let titleLabel: UILabel = {
-        let titleLabel = UILabel.titleFor(input: "Название")
-        
-        titleLabel.toAutoLayout()
-        
-        return titleLabel
-    }()
-    
+    private let scrollView = UIScrollView()
+    private let contentView = UIView()
+    private let titleLabel = UILabel.titleFor(input: "Название")
+    private let colorLabel = UILabel.titleFor(input: "Цвет")
+    private let timeLabel = UILabel.titleFor(input: "Время")
+    private var deleteButtonPrimaryBottomConstraint: Constraint? = nil
+    private var deleteButtonSecondaryBottomConstraint: Constraint? = nil
+
     private lazy var titleTextField: UITextField = {
         let titleTextField = UITextField()
         
-        titleTextField.toAutoLayout()
         titleTextField.placeholder = "Бегать по утрам, спать 8 часов и т.п."
         titleTextField.textColor = habitColor
         titleTextField.addTarget(self, action: #selector(textFieldEditingChanged(_:)), for: .editingChanged)
@@ -74,19 +58,9 @@ class HabitViewController: UIViewController {
         return titleTextField
     }()
     
-    private let colorLabel: UILabel = {
-        let colorLabel = UILabel.titleFor(input: "Цвет")
-        
-        colorLabel.toAutoLayout()
-        
-        return colorLabel
-    }()
-    
     private lazy var colorIndicator: UIView = {
         let colorIndicator = UIView()
         
-        colorIndicator.toAutoLayout()
-
         colorIndicator.clipsToBounds = true
         colorIndicator.layer.cornerRadius = StyleHelper.Size.habitColorIndicator / 2
         
@@ -98,18 +72,9 @@ class HabitViewController: UIViewController {
         return colorIndicator
     }()
     
-    private let timeLabel: UILabel = {
-        let timeLabel = UILabel.titleFor(input: "Время")
-        
-        timeLabel.toAutoLayout()
-        
-        return timeLabel
-    }()
-    
     private let timeIndicatorPrefix: UILabel = {
         let timeIndicatorPrefix = UILabel()
         
-        timeIndicatorPrefix.toAutoLayout()
         timeIndicatorPrefix.text = "Каждый день в "
         timeIndicatorPrefix.font = StyleHelper.Font.body
         
@@ -119,7 +84,6 @@ class HabitViewController: UIViewController {
     private let timeIndicatorLabel: UILabel = {
         let timeIndicatorLabel = UILabel()
         
-        timeIndicatorLabel.toAutoLayout()
         timeIndicatorLabel.textColor = StyleHelper.Color.accent
         timeIndicatorLabel.font = StyleHelper.Font.body
         
@@ -128,8 +92,6 @@ class HabitViewController: UIViewController {
     
     private lazy var timePicker: UIDatePicker = {
         let timePicker = UIDatePicker()
-        
-        timePicker.toAutoLayout()
         
         timePicker.datePickerMode = .time
         timePicker.preferredDatePickerStyle = .wheels
@@ -153,7 +115,6 @@ class HabitViewController: UIViewController {
     private lazy var deleteButton: UIButton = {
         let deleteButton = UIButton(type: .system)
         
-        deleteButton.toAutoLayout()
         deleteButton.setTitle("Удалить привычку", for: .normal)
         deleteButton.setTitleColor(.red, for: .normal)
         
@@ -162,32 +123,6 @@ class HabitViewController: UIViewController {
         return deleteButton
     }()
     
-    private lazy var deleteButtonPrimaryBottomConstraint: NSLayoutConstraint = {
-        let constraint = NSLayoutConstraint(
-            item: self.deleteButton,
-            attribute: .bottom,
-            relatedBy: .equal,
-            toItem: self.view.safeAreaLayoutGuide,
-            attribute: .bottom,
-            multiplier: 1,
-            constant: -StyleHelper.Margin.normal / 2
-        )
-        return constraint
-    }()
-    
-    private lazy var deleteButtonSecondaryBottomConstraint: NSLayoutConstraint = {
-        let constraint = NSLayoutConstraint(
-            item: self.deleteButton,
-            attribute: .bottom,
-            relatedBy: .equal,
-            toItem: self.view,
-            attribute: .bottom,
-            multiplier: 1,
-            constant: -StyleHelper.Margin.normal / 2
-        )
-        return constraint
-    }()
-
     // MARK: - Life cycle
 
     override func viewDidLoad() {
@@ -221,9 +156,12 @@ class HabitViewController: UIViewController {
                 scrollView.contentInset.bottom = keyboardSize.height
                 scrollView.verticalScrollIndicatorInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardSize.height, right: 0)
             case .edit:
-                deleteButtonPrimaryBottomConstraint.isActive = false
-                deleteButtonSecondaryBottomConstraint.isActive = true
-                self.deleteButtonSecondaryBottomConstraint.constant = -keyboardSize.height
+                deleteButtonPrimaryBottomConstraint?.deactivate()
+                deleteButton.snp.makeConstraints { (deleteButton) in
+                    self.deleteButtonSecondaryBottomConstraint = deleteButton.bottom.equalTo(self.view).inset(StyleHelper.Margin.normal / 2).constraint
+                }
+                deleteButtonSecondaryBottomConstraint?.activate()
+                deleteButtonSecondaryBottomConstraint?.update(inset: keyboardSize.height)
                 UIView.animate(withDuration: 0.3) {
                     self.view.layoutSubviews()
                 }
@@ -237,8 +175,8 @@ class HabitViewController: UIViewController {
             scrollView.contentInset.bottom = .zero //insetAdjustment
             scrollView.verticalScrollIndicatorInsets = .zero //UIEdgeInsets(top: 0, left: 0, bottom: insetAdjustment, right: 0)
         case .edit:
-            deleteButtonSecondaryBottomConstraint.isActive = false
-            deleteButtonPrimaryBottomConstraint.isActive = true
+            deleteButtonSecondaryBottomConstraint?.deactivate()
+            deleteButtonPrimaryBottomConstraint?.activate()
         }
     }
     
@@ -306,67 +244,80 @@ class HabitViewController: UIViewController {
         contentView.addSubview(timeIndicatorLabel)
         contentView.addSubview(timePicker)
         
-        var constraints = [
-            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            
-            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-
-            titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: StyleHelper.Margin.large),
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: StyleHelper.Margin.normal),
-            titleLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: StyleHelper.Margin.normal),
-            
-            titleTextField.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: StyleHelper.Spacing.small),
-            titleTextField.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            titleTextField.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            
-            colorLabel.topAnchor.constraint(equalTo: titleTextField.bottomAnchor, constant: StyleHelper.Spacing.large),
-            colorLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            colorLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            
-            colorIndicator.topAnchor.constraint(equalTo: colorLabel.bottomAnchor, constant: StyleHelper.Spacing.small),
-            colorIndicator.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            colorIndicator.widthAnchor.constraint(equalToConstant: StyleHelper.Size.habitColorIndicator),
-            colorIndicator.heightAnchor.constraint(equalToConstant: StyleHelper.Size.habitColorIndicator),
-            
-            timeLabel.topAnchor.constraint(equalTo: colorIndicator.bottomAnchor, constant: StyleHelper.Spacing.large),
-            timeLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            timeLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            
-            timeIndicatorPrefix.topAnchor.constraint(equalTo: timeLabel.bottomAnchor, constant: StyleHelper.Spacing.small),
-            timeIndicatorPrefix.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            
-            timeIndicatorLabel.topAnchor.constraint(equalTo: timeIndicatorPrefix.topAnchor),
-            timeIndicatorLabel.leadingAnchor.constraint(equalTo: timeIndicatorPrefix.trailingAnchor),
-            timeIndicatorLabel.trailingAnchor.constraint(equalTo: titleLabel.trailingAnchor),
-            
-            timePicker.topAnchor.constraint(equalTo: timeIndicatorPrefix.bottomAnchor, constant: StyleHelper.Spacing.large),
-            timePicker.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            timePicker.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            timePicker.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-        ]
+        scrollView.snp.makeConstraints { (scrollView) in
+            scrollView.top.equalTo(view.safeAreaLayoutGuide)
+            scrollView.leading.equalTo(view.safeAreaLayoutGuide)
+            scrollView.trailing.equalTo(view.safeAreaLayoutGuide)
+        }
         
+        contentView.snp.makeConstraints { (contentView) in
+            contentView.edges.equalTo(scrollView)
+            contentView.width.equalTo(scrollView)
+        }
+        
+        titleLabel.snp.makeConstraints { (titleLabel) in
+            titleLabel.top.equalTo(contentView).inset(StyleHelper.Margin.large)
+            titleLabel.leading.equalTo(contentView).inset(StyleHelper.Margin.normal)
+            titleLabel.trailing.equalTo(contentView).inset(StyleHelper.Margin.normal)
+        }
+        
+        titleTextField.snp.makeConstraints { (titleTextField) in
+            titleTextField.top.equalTo(titleLabel.snp.bottom).offset(StyleHelper.Spacing.small)
+            titleTextField.leading.equalTo(titleLabel)
+            titleTextField.trailing.equalTo(titleLabel)
+        }
+        
+        colorLabel.snp.makeConstraints { (colorLabel) in
+            colorLabel.top.equalTo(titleTextField.snp.bottom).offset(StyleHelper.Spacing.large)
+            colorLabel.leading.equalTo(titleLabel)
+            colorLabel.trailing.equalTo(titleLabel)
+        }
+        
+        colorIndicator.snp.makeConstraints { (colorIndicator) in
+            colorIndicator.top.equalTo(colorLabel.snp.bottom).offset(StyleHelper.Spacing.small)
+            colorIndicator.leading.equalTo(titleLabel)
+            colorIndicator.size.equalTo(StyleHelper.Size.habitColorIndicator)
+        }
+        
+        timeLabel.snp.makeConstraints { (timeLabel) in
+            timeLabel.top.equalTo(colorIndicator.snp.bottom).offset(StyleHelper.Spacing.large)
+            timeLabel.leading.equalTo(titleLabel)
+            timeLabel.trailing.equalTo(titleLabel)
+        }
+        
+        timeIndicatorPrefix.snp.makeConstraints { (timeIndicatorPrefix) in
+            timeIndicatorPrefix.top.equalTo(timeLabel.snp.bottom).offset(StyleHelper.Spacing.small)
+            timeIndicatorPrefix.leading.equalTo(titleLabel)
+        }
+        
+        timeIndicatorLabel.snp.makeConstraints { (timeIndicatorLabel) in
+            timeIndicatorLabel.top.equalTo(timeIndicatorPrefix)
+            timeIndicatorLabel.leading.equalTo(timeIndicatorPrefix.snp.trailing)
+            timeIndicatorLabel.trailing.equalTo(titleLabel)
+        }
+        
+        timePicker.snp.makeConstraints { (timePicker) in
+            timePicker.top.equalTo(timeIndicatorPrefix.snp.bottom).offset(StyleHelper.Margin.large)
+            timePicker.leading.equalTo(contentView)
+            timePicker.trailing.equalTo(contentView)
+            timePicker.bottom.equalTo(contentView)
+        }
 
         switch actionType {
         
         case .create:
-            constraints.append(scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor))
+            scrollView.snp.makeConstraints { (scrollView) in
+                scrollView.bottom.equalTo(view.safeAreaLayoutGuide)
+            }
             
         case .edit:
             view.addSubview(deleteButton)
-            constraints.append(contentsOf: [
-                deleteButton.topAnchor.constraint(equalTo: scrollView.bottomAnchor),
-                deleteButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-                deleteButtonPrimaryBottomConstraint
-            ])
+            deleteButton.snp.makeConstraints { (deleteButton) in
+                deleteButton.top.equalTo(scrollView.snp.bottom)
+                deleteButton.centerX.equalTo(view)
+                self.deleteButtonPrimaryBottomConstraint = deleteButton.bottom.equalTo(view.safeAreaLayoutGuide).inset(StyleHelper.Margin.normal / 2).constraint
+            }
         }
-        
-        NSLayoutConstraint.activate(constraints)
         
         colorIndicator.backgroundColor = habitColor
     }

@@ -16,7 +16,6 @@ class HabitsViewController: UIViewController {
         let collectionViewFlowLayout = UICollectionViewFlowLayout()
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: collectionViewFlowLayout)
         
-        collectionView.toAutoLayout()
         collectionView.backgroundColor = StyleHelper.Color.lightGray
         
         collectionView.register(ProgressCollectionViewCell.self, forCellWithReuseIdentifier: ProgressCollectionViewCell.reuseIdentifier)
@@ -66,14 +65,13 @@ class HabitsViewController: UIViewController {
         
         view.addSubview(collectionView)
         
-        let constraints = [
-            collectionView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ]
-        
-        NSLayoutConstraint.activate(constraints)
+        collectionView.snp.makeConstraints { (collectionView) in
+//            collectionView.edges.equalTo(view).inset(UIEdgeInsets(top: view.safeAreaInsets.top, left: 0, bottom: view.safeAreaInsets.bottom, right: 0))
+            collectionView.top.equalTo(view.safeAreaLayoutGuide)
+            collectionView.bottom.equalTo(view.safeAreaLayoutGuide)
+            collectionView.leading.equalTo(view)
+            collectionView.trailing.equalTo(view)
+        }
     }
     
     // MARK: - Actions
